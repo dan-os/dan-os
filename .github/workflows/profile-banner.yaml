@@ -3,6 +3,8 @@ name: GitHub Profile Banner
 on:
   push:
     branches: [main]
+    paths:
+      - banner/**
 
 jobs:
   generate:
