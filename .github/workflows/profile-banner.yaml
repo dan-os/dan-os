@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - banner/**
+      - banner/profile/**
+      - .github/workflows/profile-banner.yaml
 
 jobs:
   generate:
@@ -26,8 +27,8 @@ jobs:
         id: screenshot
         uses: cloudposse-github-actions/screenshot@main
         with:
-          url: "file://${{github.workspace}}/banner/index.html"
-          output: "banner/image.png"
+          url: "file://${{github.workspace}}/banner/profile/index.html"
+          output: "banner/profile/image.png"
           # Ref: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview
           viewportWidth: 1280
           viewportHeight: 370
@@ -40,9 +41,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commit_message: "chore: update profile banner image"
-          file_pattern: "banner/*.png"
+          file_pattern: "banner/profile/*.png"
 
-      - name: Add Image to Step Summary
+      - name: Add image to step summary
         if: steps.auto-commit.outputs.changes_detected == 'true'
         run: |
           echo "## Generated Screenshot" >> $GITHUB_STEP_SUMMARY
