@@ -16,8 +16,7 @@ on:
       token:
         description: "GitHub token"
         type: string
-        required: false
-        default: ${{ github.token }}
+        required: true
       commit_method:
         description: "The method to apply changes. Can be either 'commit' or 'pr'."
         type: string
