@@ -13,15 +13,15 @@ on:
         type: string
         required: false
         default: ${{ github.repository }}
-      token:
-        description: "GitHub token"
-        type: string
-        required: true
       commit_method:
         description: "The method to apply changes. Can be either 'commit' or 'pr'."
         type: string
         required: true
         default: commit
+    secrets:
+      token:
+        description: "GitHub token"
+        required: true
 
 permissions:
   contents: write
@@ -42,7 +42,7 @@ jobs:
           ref: ${{ inputs.ref }}
           repository: ${{ inputs.repository }}
           fetch-depth: 0
-          token: ${{ inputs.token }}
+          token: ${{ secrets.token }}
 
       - name: Fetch repo metadata
         id: metadata
@@ -62,7 +62,7 @@ jobs:
           repository: "${{ steps.metadata.outputs.owner_login }}/${{ steps.metadata.outputs.owner_login }}"
           ref: "main"
           path: "github"
-          token: ${{ inputs.token }}
+          token: ${{ secrets.token }}
 
       - uses: actions-tools/yaml-outputs@49506207f91d468273fd5e73fbd18d6d2d9df9b1
         id: readme
@@ -136,7 +136,7 @@ jobs:
         name: Commit artifact
         id: auto-commit
         env:
-          GITHUB_TOKEN: ${{ inputs.token }}
+          GITHUB_TOKEN: ${{ secrets.token }}
         with:
           commit_message: "chore: update repo banner image"
           file_pattern: "${{ steps.meta.outputs.output }}"
@@ -175,4 +175,4 @@ jobs:
             
           # Requires a GitHub PAT used to open PRs that trigger other workflows
           # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-          token: ${{ inputs.token }}
+          token: ${{ secrets.token }}
