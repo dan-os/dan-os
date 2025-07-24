@@ -13,11 +13,20 @@ on:
         type: string
         required: false
         default: ${{ github.repository }}
+      token:
+        description: "GitHub token"
+        type: string
+        required: false
+        default: ${{ secrets.GITHUB_TOKEN }}
       commit_method:
         description: "The method to apply changes. Can be either 'commit' or 'pr'."
         type: string
         required: true
         default: commit
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   generate:
@@ -28,19 +37,13 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - uses: actions/create-github-app-token@v1
-        id: github-app
-        with:
-          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
-          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
           repository: ${{ inputs.repository }}
           fetch-depth: 0
-          token: ${{ steps.github-app.outputs.token }}
+          token: ${{ inputs.token }}
 
       - name: Fetch repo metadata
         id: metadata
@@ -60,7 +63,7 @@ jobs:
           repository: "${{ steps.metadata.outputs.owner_login }}/${{ steps.metadata.outputs.owner_login }}"
           ref: "main"
           path: "github"
-          token: ${{ steps.github-app.outputs.token }}
+          token: ${{ inputs.token }}
 
       - uses: actions-tools/yaml-outputs@49506207f91d468273fd5e73fbd18d6d2d9df9b1
         id: readme
@@ -72,7 +75,8 @@ jobs:
         id: meta
         uses: actions/github-script@v7
         env:
-          README_NAME: ${{steps.readme.outputs.name}}
+          README_NAME: ${{ steps.readme.outputs.name }}
+          README_DESCRIPTION: ${{ steps.readme.outputs.repository_description }}
           REPOSITORY_NAME: ${{ steps.metadata.outputs.repository_name }}
           REPOSITORY_DESCRIPTION: ${{ steps.metadata.outputs.repository_description }}
         with:
@@ -84,7 +88,7 @@ jobs:
             }
 
             let name = process.env.README_NAME || process.env.REPOSITORY_NAME
-            let desc = process.env.REPOSITORY_DESCRIPTION;
+            let desc = process.env.README_DESCRIPTION || process.env.REPOSITORY_DESCRIPTION;
             let type = 'Project';
             let output = '.github/banner.png';
 
@@ -133,7 +137,7 @@ jobs:
         name: Commit artifact
         id: auto-commit
         env:
-          GITHUB_TOKEN: ${{ steps.github-app.outputs.token }}
+          GITHUB_TOKEN: ${{ inputs.token }}
         with:
           commit_message: "chore: update repo banner image"
           file_pattern: "${{ steps.meta.outputs.output }}"
@@ -172,4 +176,4 @@ jobs:
             
           # Requires a GitHub PAT used to open PRs that trigger other workflows
           # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-          token: ${{ steps.github-app.outputs.token }}
+          token: ${{ inputs.token }}
